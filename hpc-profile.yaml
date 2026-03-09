@@ -1,0 +1,16 @@
+apiVersion: performance.openshift.io/v2
+kind: PerformanceProfile
+metadata:
+  name: hpc-profile
+spec:
+  cpu:
+    reserved: "0-3"   # 4 CPUs reserved for the OpenShift OS/Kubelet
+    isolated: "4-31"  # 28 CPUs isolated exclusively for your C++ app
+  nodeSelector:
+    node-role.kubernetes.io/hpc: "" 
+  # Link the profile to the custom MCP
+  machineConfigPoolSelector:
+    pools.operator.machineconfiguration.openshift.io/hpc: ""
+  numa:
+    topologyPolicy: "single-numa-node"
+

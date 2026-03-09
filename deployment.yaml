@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hpc-poc
+  labels:
+    app: hpc-matrix-app
+spec:
+  replicas: 4 
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: hpc-matrix-app
+  template:
+    metadata:
+      labels:
+        app: hpc-matrix-app
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+        hpc-dedicated: "true"
+      containers:
+      - name: matrix-calculator
+        image: docker.io/gennady73/hpc-poc:latest 
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c"]
+        args: ["./hpc_app && sleep infinity"]
+        env:
+        - name: MALLOC_ARENA_MAX
+          value: "2"
+        resources:
+          # Guaranteed QoS: Requests and Limits must be identical whole integers
+          requests:
+            cpu: "12"
+            memory: "10Gi"
+          limits:
+            cpu: "12"
+            memory: "10Gi"
+

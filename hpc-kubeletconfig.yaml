@@ -1,0 +1,15 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: KubeletConfig
+metadata:
+  name: hpc-kubelet-tuning
+spec:
+  machineConfigPoolSelector:
+    matchLabels:
+      custom-kubelet: hpc-tuning
+  kubeletConfig:
+    cpuManagerPolicy: static
+    cpuManagerReconcilePeriod: 5s
+    topologyManagerPolicy: single-numa-node
+    # Explicitly reserve cores 0, 1, 2, and 3 for the OS and OpenShift
+    reservedSystemCPUs: "0,1,2,3"
+
