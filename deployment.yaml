@@ -35,9 +35,9 @@ spec:
         resources:
           # Guaranteed QoS: Requests and Limits must be identical whole integers
           requests:
-            cpu: "12"
+            cpu: "6"
             memory: "10Gi"
           limits:
-            cpu: "12"
+            cpu: "6"
             memory: "10Gi"
 

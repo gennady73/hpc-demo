@@ -62,9 +62,37 @@ To capture the metrics and validate the performance screenshots in this report, 
 
 ## **3. Application CPU Visibility & Code Fixes**
 
-A major challenge in containerized HPC environments is that legacy applications often query the host's physical hardware rather than their cgroup limits. When an application queries `sysconf(_SC_NPROCESSORS_ONLN)`, it will often see the node's total 32 cores instead of the pod's 6-core limit.
+A major challenge in containerized HPC environments is that legacy applications often query the host's physical hardware rather than their `cgroup` limits. When an application queries `sysconf(_SC_NPROCESSORS_ONLN)`. In this particular case, it will often see the node's total 32 cores instead of the pod's 6-core limit.
 
-We tested two versions of the application to demonstrate this visibility issue and the necessary code-level fixes (e.g., using `LD_PRELOAD` to intercept system calls or updating the app to read cgroup limits).
+We tested two versions of the application to demonstrate this visibility issue and the necessary code-level fixes.
+
+**The "Magic" Code Fix: LD_PRELOAD Wrapper**
+
+To fix legacy applications without rewriting their source code (as seen in hpc_adv_app), developers can use an `LD_PRELOAD` wrapper to intercept the sysconf system call and force it to return the cgroup limit.
+1. Create a C wrapper (cpu_wrapper.c):
+    ```c
+    #define _GNU_SOURCE
+    #include <unistd.h>
+    #include <dlfcn.h>
+    #include <stdlib.h>
+
+    long sysconf(int name) {
+        long (*real_sysconf)(int) = dlsym(RTLD_NEXT, "sysconf");
+        if (name == _SC_NPROCESSORS_ONLN) {
+            // Force the app to see only 6 cores, or read from an ENV var
+            return 6; 
+        }
+        return real_sysconf(name);
+    }
+    ```
+2. Compile and run in the Dockerfile:
+    ```bash
+    RUN gcc -shared -fPIC -o /lib/cpu_wrapper.so cpu_wrapper.c -ldl
+    ENV LD_PRELOAD=/lib/cpu_wrapper.so
+    CMD ["./hpc_app"]
+    ```
+⚠️ **Important Note:** For more information, see the [Application Layer Solution: C++ Container-Awareness](/README.md#application-layer-solution-c-container-awareness) on the main page. 
+
 
 ### **Standard Node (CFS Time-Slicing)**
 
@@ -234,6 +262,11 @@ To achieve these baseline performance metrics in the production cluster, all hea
 ```
 
 ## **8. OpenShift Infrastructure Manifests**
+
+⚠️ **ARCHITECT WARNING:** Mutually Exclusive Policies       
+The `KubeletConfig` [Section 8B](#b-hpc-kubeletconfigyaml)) uses `topologyManagerPolicy: single-numa-node`. This requires the pod to fit entirely within one physical CPU socket.       
+The PerformanceProfile [Section 8C](#c-hpc-profileyaml-for-massive-apps-crossing-numa-boundaries) uses `topologyPolicy: "restricted"` specifically to allow massive apps to span across multiple sockets.       
+**Do not apply both of these to the same MachineConfigPool.** They must target distinctly labeled node groups (e.g., `hpc-standard` vs `hpc-massive`). Additionally, applying a `PerformanceProfile` requires the [Node Tuning Operator](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/scalability_and_performance/using-node-tuning-operator) to rewrite grub parameters, resulting in a mandatory reboot of the target nodes.
 
 The following infrastructure files establish the `hpc` node tier to enable the performance benchmarks achieved above.
 
