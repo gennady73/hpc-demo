@@ -1,6 +1,7 @@
 # OpenShift HPC Resource Management & gRPC Tuning POC
 ### Overview: The "Container CPU Illusion"
-This repository contains a Proof of Concept (POC) designed to demonstrate and resolve severe performance degradation and Out-of-Memory (OOM) fragmentation for C++ High-Performance Computing (HPC) applications running on OpenShift.
+This repository contains a Proof of Concept (POC) designed to demonstrate and resolve severe performance degradation and Out-of-Memory (OOM) fragmentation for C++ High-Performance Computing (HPC) applications running on OpenShift.      
+In addition, refer to the [OpenShift CPU Pinning & Performance Benchmark Report](/docs/PerformanceReport.md) document demonstartes the benchmark approach.
 
 The core of the problem is the "Container CPU Illusion." In a pre-Kubernetes environment, applications relied on standard OS interfaces like `std::thread::hardware_concurrency()` or `sysconf(_SC_NPROCESSORS_ONLN)` to dictate thread pool sizes. Inside a container, these functions pierce the container abstraction and return the physical host's total core count rather than the pod's `cgroup` limits.
 
