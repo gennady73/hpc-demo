@@ -264,7 +264,7 @@ To achieve these baseline performance metrics in the production cluster, all hea
 ## **8. OpenShift Infrastructure Manifests**
 
 ⚠️ **ARCHITECT WARNING:** Mutually Exclusive Policies       
-The `KubeletConfig` [Section 8B](#b-hpc-kubeletconfigyaml)) uses `topologyManagerPolicy: single-numa-node`. This requires the pod to fit entirely within one physical CPU socket.       
+The `KubeletConfig` [Section 8B](#b-hpc-kubeletconfigyaml) uses `topologyManagerPolicy: single-numa-node`. This requires the pod to fit entirely within one physical CPU socket.       
 The PerformanceProfile [Section 8C](#c-hpc-profileyaml-for-massive-apps-crossing-numa-boundaries) uses `topologyPolicy: "restricted"` specifically to allow massive apps to span across multiple sockets.       
 **Do not apply both of these to the same MachineConfigPool.** They must target distinctly labeled node groups (e.g., `hpc-standard` vs `hpc-massive`). Additionally, applying a `PerformanceProfile` requires the [Node Tuning Operator](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/scalability_and_performance/using-node-tuning-operator) to rewrite grub parameters, resulting in a mandatory reboot of the target nodes.
 
