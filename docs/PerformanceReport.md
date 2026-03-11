@@ -2,7 +2,7 @@
 
 ## **Executive Summary**
 
-This document complements the [Main README](http://docs.google.com/README.md) by outlining the performance impact of utilizing OpenShift's static CPU Manager policy and dedicated nodes versus the default Linux Completely Fair Scheduler (CFS) for heavy, multi-threaded workloads.
+This document complements the [OpenShift HPC Resource Management & gRPC Tuning POC](/README.md) document by outlining the performance impact of utilizing OpenShift's static CPU Manager policy and dedicated nodes versus the default Linux Completely Fair Scheduler (CFS) for heavy, multi-threaded workloads.
 
 Based on rigorous A/B testing, enforcing strict CPU isolation yielded massive performance gains without upgrading any physical hardware:
 
