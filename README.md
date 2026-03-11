@@ -194,6 +194,7 @@ Exec into the pod, ensure you are in the `/tmp` directory, and run the matrix ma
     ```
 4. Record the Results:  
 Note the `bogo ops/s` output. This represents the application's throughput under standard CFS scheduling.
+Read the full **[OpenShift CPU Pinning & Performance Benchmark Report](/docs/PerformanceReport.md)** document.       
 
 ## 5. Benchmarking Phase B: OpenShift Hardware Tuning
 We will now use the Node Tuning Operator to isolate the CPUs, apply the `static` CPU manager policy, and enforce NUMA alignment.    
@@ -255,4 +256,5 @@ Exec into the pod again and run the exact same test:
     ```
 
 3. Compare Results:     
-Compare the new `bogo ops/s` metric against the untuned baseline. The throughput will be significantly higher due to the elimination of CPU cache invalidation, context-switching, and CFS throttling.
+Compare the new `bogo ops/s` metric against the untuned baseline. The throughput will be significantly higher due to the elimination of CPU cache invalidation, context-switching, and CFS throttling. Refer to **[OpenShift CPU Pinning & Performance Benchmark Report](/docs/PerformanceReport.md)** document.        
+

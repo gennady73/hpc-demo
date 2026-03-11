@@ -2,11 +2,11 @@ apiVersion: apps/v1
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hpc-poc
+  name: hpc-poc-cfs
   labels:
     app: hpc-matrix-app
 spec:
-  replicas: 4 
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -22,7 +22,7 @@ spec:
     spec:
       nodeSelector:
         node-role.kubernetes.io/worker: ""
-        hpc-dedicated: "true"
+        hpc-common: "true"
       containers:
       - name: matrix-calculator
         image: docker.io/gennady73/hpc-poc:latest 
@@ -35,9 +35,9 @@ spec:
         resources:
           # Guaranteed QoS: Requests and Limits must be identical whole integers
           requests:
-            cpu: "12"
-            memory: "10Gi"
+            cpu: "6"
+            memory: "5Gi"
           limits:
-            cpu: "12"
-            memory: "10Gi"
+            cpu: "6"
+            memory: "5Gi"
 
