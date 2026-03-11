@@ -159,13 +159,13 @@ Note: Use `grep "^Cpus_allowed_list:" /proc/self/task/*/status` to verify if Ope
 
 ## 4. Benchmarking Phase A: Untuned Baseline  
 
-#### Understanding Node Resources and the "12 CPU" Limit
+#### Understanding Node Resources and the "6 CPU" Limit
 
-In the deployment examples below, the pod is configured to request exactly `12 CPUs`. This number is not arbitrary. When configuring OpenShift for High-Performance Computing, you cannot allocate 100% of a node's physical cores to a workload.
+In the deployment examples below, the pod is configured to request exactly `6 CPUs`. This number is not arbitrary. When configuring OpenShift for High-Performance Computing, you cannot allocate 100% of a node's physical cores to a workload.
 
 To provide reliable scheduling and prevent node resource overcommitment, OpenShift subtracts a reserved portion of CPU and memory from the node's total capacity to calculate the "Allocatable" resources. These reservations (`system-reserved` and `kube-reserved`) ensure that the operating system, `kubelet`, CRI-O runtime, and network routing remain stable under heavy load.
 
-For instance, on a modern node with **16** physical cores, reserving **4** cores for the platform overhead leaves exactly **12** allocatable cores for user workloads. Requesting 12 CPUs ensures the pod fits perfectly within the node's boundaries without starving the OpenShift control plane.     
+For instance, on a modern node with **16** physical cores, reserving **4** cores for the platform overhead leaves exactly **12** allocatable cores for user workloads. Requesting **2x6** CPUs ensures the 2 pods fits perfectly within the node's boundaries without starving the OpenShift control plane.     
 
 **Note:** For detailed calculations, refer to the [Allocating resources for nodes in an OpenShift Container Platform cluster](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/nodes/working-with-nodes#nodes-nodes-resources-configuring).
 
@@ -179,7 +179,7 @@ First, we establish a performance baseline on standard worker nodes where thread
     ```
 
 2. Deploy the application:  
-Ensure `deployment.yaml` sets both CPU requests and limits to `12`.
+Ensure `deployment.yaml` sets both CPU requests and limits to `6`.
 
     ```bash
     oc apply -f deployment.yaml
@@ -191,7 +191,7 @@ Exec into the pod, ensure you are in the `/tmp` directory, and run the matrix ma
     ```bash
     oc exec -it <pod-name> -- /bin/bash
     cd /tmp
-    stress-ng --cpu 12 --cpu-method matrixprod --timeout 60s --metrics-brief
+    stress-ng --cpu 6 --cpu-method matrixprod --timeout 60s --metrics-brief
     ```
 4. Record the Results:  
 Note the `bogo ops/s` output. This represents the application's throughput under standard CFS scheduling.
@@ -236,7 +236,7 @@ The Machine Config Operator will drain and reboot the nodes. Wait until the `hpc
     ```
 
 ## 6. Benchmarking Phase C: Optimized Results
-Once the nodes reboot, OpenShift will recognize the pod's `Guaranteed` QoS class (requests == limits = 12) and permanently pin the container to 12 isolated hardware cores.
+Once the nodes reboot, OpenShift will recognize the pod's `Guaranteed` QoS class (requests == limits = 6) and permanently pin the container to 6 isolated hardware cores.
 
 1. Verify the Hardware Lock:    
 Check the application logs to see the output from our C++ `sysconf` override probe:
@@ -245,7 +245,7 @@ Check the application logs to see the output from our C++ `sysconf` override pro
     oc logs deployment/hpc-poc
     ```
 
-    It should successfully report `OpenShift/K8s 'static' policy (Exclusive Pinned Cores)` and an affinity mask of exactly `12`.
+    It should successfully report `OpenShift/K8s 'static' policy (Exclusive Pinned Cores)` and an affinity mask of exactly `6`.
 
 2. Execute the Final Benchmark:     
 Exec into the pod again and run the exact same test:
@@ -253,7 +253,7 @@ Exec into the pod again and run the exact same test:
     ```bash
     oc exec -it <pod-name> -- /bin/bash
     cd /tmp
-    stress-ng --cpu 12 --cpu-method matrixprod --timeout 60s --metrics-brief
+    stress-ng --cpu 6 --cpu-method matrixprod --timeout 60s --metrics-brief
     ```
 
 3. Compare Results:     
